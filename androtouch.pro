@@ -1,0 +1,9 @@
+FORMS += androtouchwidget.ui
+HEADERS += androtouch.h
+SOURCES += androtouch.cpp main.cpp
+RESOURCES += androtouch.qrc
+ANDROTOUCH = app
+CONFIG += release warn_on thread qt
+TARGET = androtouch
+QT += network
+RC_FILE = androtouch.rc
