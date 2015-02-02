@@ -11,6 +11,7 @@ AndroTouch::AndroTouch() : QMainWindow(0)
 	connect(actionAbout, SIGNAL(triggered()), SLOT(about()));
 	connect(actionAbout_Qt, SIGNAL(triggered()), QCoreApplication::instance(), SLOT(aboutQt()));
 	connect(&grabber, SIGNAL(grabbed(QByteArray*)), SLOT(sshot(QByteArray*)));
+	connect(screen, SIGNAL(clicked(QMouseEvent*)), SLOT(touch(QMouseEvent*)));
 
 	grabber.start();
 }
@@ -79,4 +80,9 @@ void AndroTouch::sshot(QByteArray *bytes)
 	png.loadFromData(*bytes, "PNG");
 	png = png.scaledToHeight(screen->height(), Qt::SmoothTransformation);
 	screen->setPixmap(png);
+}
+
+void AndroTouch::touch(QMouseEvent *evt)
+{
+	qDebug("touch");
 }
