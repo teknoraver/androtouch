@@ -35,9 +35,21 @@ void AndroTouch::sshot()
 		bytes += adb.readAll();
 		usleep(100 * 1000);
 	}
-
 	bytes.remove(0, strlen("screencap -p\r\n"));
 	bytes = bytes.replace("\r\n", "\n");
+	if(!bytes.startsWith("\x89PNG\r\n\x1a\n")) {
+		qDebug("invalid image, missing PNG");
+		QTimer::singleShot(1000, this, SLOT(sshot()));
+		return;
+	}
+	int iend = bytes.indexOf("IEND\xae\x42\x60\x82");
+	if(iend == -1) {
+		qDebug("invalid image, missing IEND");
+		QTimer::singleShot(1000, this, SLOT(sshot()));
+		return;
+	}
+	bytes.truncate(iend + 8);
+
 	qDebug("size: %d", bytes.size());
 	//////
 	QFile file("shot.png");
@@ -47,6 +59,7 @@ void AndroTouch::sshot()
 	/////////
 	QPixmap png;
 	png.loadFromData(bytes, "PNG");
+	png = png.scaledToHeight(screen->height(), Qt::SmoothTransformation);
 //	png.loadFromData(adb.readAll().replace("\r\n", "\n"), "PNG");
 	screen->setPixmap(png);
 
