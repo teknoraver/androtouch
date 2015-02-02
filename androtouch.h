@@ -2,6 +2,7 @@
 #define ANDROTOUCH_H
 
 #include <QMainWindow>
+#include <QProcess>
 
 #include "ui_androtouchwidget.h"
 
@@ -13,6 +14,10 @@ public:
 	~AndroTouch();
 private slots:
 	void about();
+	void sshot();
+
+private:
+	QProcess adb;
 };
 
 #endif
