@@ -1,7 +1,8 @@
 #include <unistd.h>
 #include <QMessageBox>
 #include <QTimer>
-#include <QBitmap>
+#include <QFile>
+#include <QPixmap>
 
 #include "androtouch.h"
 
@@ -29,10 +30,24 @@ void AndroTouch::sshot()
 {
 	adb.write("screencap -p\n");
 	adb.waitForBytesWritten(-1);
-	sleep(1);
-	adb.waitForReadyRead();
-	QBitmap png;
-	png.loadFromData(adb.readAll().replace("\r\n", "\n"), "PNG");
+	QByteArray bytes;
+	while(adb.bytesAvailable() != 0) {
+		bytes += adb.readAll();
+		usleep(100 * 1000);
+	}
+
+	bytes.remove(0, strlen("screencap -p\r\n"));
+	bytes = bytes.replace("\r\n", "\n");
+	qDebug("size: %d", bytes.size());
+	//////
+	QFile file("shot.png");
+	file.open(QIODevice::ReadWrite);
+	file.write(bytes);
+	file.close();
+	/////////
+	QPixmap png;
+	png.loadFromData(bytes, "PNG");
+//	png.loadFromData(adb.readAll().replace("\r\n", "\n"), "PNG");
 	screen->setPixmap(png);
 
 	QTimer::singleShot(1000, this, SLOT(sshot()));
