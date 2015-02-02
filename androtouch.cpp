@@ -1,4 +1,3 @@
-#include <unistd.h>
 #include <QMessageBox>
 #include <QTimer>
 #include <QFile>
@@ -11,14 +10,9 @@ AndroTouch::AndroTouch() : QMainWindow(0)
 	setupUi(this);
 	connect(actionAbout, SIGNAL(triggered()), SLOT(about()));
 	connect(actionAbout_Qt, SIGNAL(triggered()), QCoreApplication::instance(), SLOT(aboutQt()));
+	connect(&grabber, SIGNAL(grabbed(QByteArray*)), SLOT(sshot(QByteArray*)));
 
-	QTimer::singleShot(1000, this, SLOT(sshot()));
-
-	adb.start("adb shell");
-}
-
-AndroTouch::~AndroTouch()
-{
+	grabber.start();
 }
 
 void AndroTouch::about()
@@ -26,42 +20,63 @@ void AndroTouch::about()
         QMessageBox::about(this, "About AndroTouch", "AndroTouch - a Qt AndroTouch application<br>by Matteo Croce <a href=\"http://teknoraver.net/\">http://teknoraver.net/</a>");
 }
 
-void AndroTouch::sshot()
+Grabber::Grabber()
 {
-	adb.write("screencap -p\n");
-	adb.waitForBytesWritten(-1);
-	QByteArray bytes;
-	while(adb.bytesAvailable() != 0) {
-		bytes += adb.readAll();
-		usleep(100 * 1000);
-	}
-	bytes.remove(0, strlen("screencap -p\r\n"));
-	bytes = bytes.replace("\r\n", "\n");
-	if(!bytes.startsWith("\x89PNG\r\n\x1a\n")) {
-		qDebug("invalid image, missing PNG");
-		QTimer::singleShot(1000, this, SLOT(sshot()));
-		return;
-	}
-	int iend = bytes.indexOf("IEND\xae\x42\x60\x82");
-	if(iend == -1) {
-		qDebug("invalid image, missing IEND");
-		QTimer::singleShot(1000, this, SLOT(sshot()));
-		return;
-	}
-	bytes.truncate(iend + 8);
+	adb.start("adb shell");
+	adb.write("PS1=\n");
+}
 
-	qDebug("size: %d", bytes.size());
-	//////
-	QFile file("shot.png");
-	file.open(QIODevice::ReadWrite);
-	file.write(bytes);
-	file.close();
-	/////////
+void Grabber::run()
+{
+	while(1) {
+		adb.write("screencap -p\n");
+		adb.waitForBytesWritten(-1);
+		QByteArray bytes;
+		while(!bytes.contains("IEND\xae\x42\x60\x82")) {
+			bytes += adb.readAll();
+			msleep(100);
+		}
+		bytes = bytes.replace("\r\n", "\n");
+		int chunk = bytes.indexOf("\x89PNG\r\n\x1a\n");
+		if(chunk == -1) {
+			//////
+			QFile file("nopng.png");
+			file.open(QIODevice::ReadWrite);
+			file.write(bytes);
+			file.close();
+			/////////
+			qDebug("invalid image, missing PNG");
+			continue;
+		}
+		bytes = bytes.remove(0, chunk);
+		chunk = bytes.indexOf("IEND\xae\x42\x60\x82");
+		if(chunk == -1) {
+			//////
+			QFile file("noiend.png");
+			file.open(QIODevice::ReadWrite);
+			file.write(bytes);
+			file.close();
+			/////////
+			qDebug("invalid image, missing IEND");
+			continue;
+		}
+		bytes.truncate(chunk + 8);
+		qDebug("size: %d", bytes.size());
+//////
+QFile file("sshot.png");
+file.open(QIODevice::ReadWrite);
+file.write(bytes);
+file.close();
+/////////
+		png = bytes;
+		emit grabbed(&png);
+	}
+}
+
+void AndroTouch::sshot(QByteArray *bytes)
+{
 	QPixmap png;
-	png.loadFromData(bytes, "PNG");
+	png.loadFromData(*bytes, "PNG");
 	png = png.scaledToHeight(screen->height(), Qt::SmoothTransformation);
-//	png.loadFromData(adb.readAll().replace("\r\n", "\n"), "PNG");
 	screen->setPixmap(png);
-
-	QTimer::singleShot(1000, this, SLOT(sshot()));
 }
