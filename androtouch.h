@@ -2,7 +2,6 @@
 #define ANDROTOUCH_H
 
 #include <QMainWindow>
-#include <QProcess>
 #include <QThread>
 #include <QLabel>
 
@@ -27,11 +26,8 @@ protected:
 class Grabber : public QThread
 {
 	Q_OBJECT
-	QProcess adb;
 	void run();
 	QByteArray png;
-public:
-	Grabber();
 signals:
 	void grabbed(QByteArray*);
 };

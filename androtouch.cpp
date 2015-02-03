@@ -1,7 +1,7 @@
 #include <QMessageBox>
-#include <QTimer>
-#include <QFile>
 #include <QPixmap>
+#include <QMouseEvent>
+#include <QProcess>
 
 #include "androtouch.h"
 
@@ -21,54 +21,23 @@ void AndroTouch::about()
         QMessageBox::about(this, "About AndroTouch", "AndroTouch - a Qt AndroTouch application<br>by Matteo Croce <a href=\"http://teknoraver.net/\">http://teknoraver.net/</a>");
 }
 
-Grabber::Grabber()
-{
-	adb.start("adb shell");
-	adb.write("PS1=\n");
-}
-
 void Grabber::run()
 {
 	while(1) {
-		adb.write("screencap -p\n");
-		adb.waitForBytesWritten(-1);
-		QByteArray bytes;
-		while(!bytes.contains("IEND\xae\x42\x60\x82")) {
-			bytes += adb.readAll();
-			msleep(100);
-		}
-		bytes = bytes.replace("\r\n", "\n");
-		int chunk = bytes.indexOf("\x89PNG\r\n\x1a\n");
-		if(chunk == -1) {
-			//////
-			QFile file("nopng.png");
-			file.open(QIODevice::ReadWrite);
-			file.write(bytes);
-			file.close();
-			/////////
+		QProcess adb;
+		adb.start("adb", QStringList() << "shell" << "screencap" << "-p");
+		adb.waitForFinished(-1);
+		QByteArray bytes = adb.readAllStandardOutput().replace("\r\n", "\n");
+
+		if(!bytes.startsWith("\x89PNG\r\n\x1a\n")) {
 			qDebug("invalid image, missing PNG");
 			continue;
 		}
-		bytes = bytes.remove(0, chunk);
-		chunk = bytes.indexOf("IEND\xae\x42\x60\x82");
-		if(chunk == -1) {
-			//////
-			QFile file("noiend.png");
-			file.open(QIODevice::ReadWrite);
-			file.write(bytes);
-			file.close();
-			/////////
+		if(!bytes.endsWith("IEND\xae\x42\x60\x82")) {
 			qDebug("invalid image, missing IEND");
 			continue;
 		}
-		bytes.truncate(chunk + 8);
 		qDebug("size: %d", bytes.size());
-//////
-QFile file("sshot.png");
-file.open(QIODevice::ReadWrite);
-file.write(bytes);
-file.close();
-/////////
 		png = bytes;
 		emit grabbed(&png);
 	}
@@ -84,5 +53,8 @@ void AndroTouch::sshot(QByteArray *bytes)
 
 void AndroTouch::touch(QMouseEvent *evt)
 {
-	qDebug("touch");
+	int x = evt->x() * 1080 / screen->width();
+	int y = evt->y() * 1920 / screen->height();
+	qDebug("touch: %d, %d", x, y);
+	QProcess::execute("adb", QStringList() << "shell" << "input" << "tap" << QString::number(x) << QString::number(y));
 }
