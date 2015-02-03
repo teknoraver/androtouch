@@ -13,11 +13,16 @@ public:
 
 signals:
 	void clicked(QMouseEvent*);
+	void unclicked(QMouseEvent*);
 
 protected:
 	void mousePressEvent(QMouseEvent *event)
 	{
 		emit clicked(event);
+	}
+	void mouseReleaseEvent(QMouseEvent *event)
+	{
+		emit unclicked(event);
 	}
 };
 
@@ -43,6 +48,7 @@ private slots:
 	void touch(QMouseEvent *evt);
 private:
 	Grabber grabber;
+	int lastx, lasty;
 };
 
 #endif

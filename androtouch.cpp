@@ -12,6 +12,7 @@ AndroTouch::AndroTouch() : QMainWindow(0)
 	connect(actionAbout_Qt, SIGNAL(triggered()), QCoreApplication::instance(), SLOT(aboutQt()));
 	connect(&grabber, SIGNAL(grabbed(QByteArray*)), SLOT(sshot(QByteArray*)));
 	connect(screen, SIGNAL(clicked(QMouseEvent*)), SLOT(touch(QMouseEvent*)));
+	connect(screen, SIGNAL(unclicked(QMouseEvent*)), SLOT(touch(QMouseEvent*)));
 
 	grabber.start();
 }
@@ -37,7 +38,7 @@ void Grabber::run()
 			qDebug("invalid image, missing IEND");
 			continue;
 		}
-		qDebug("size: %d", bytes.size());
+		//qDebug("size: %d", bytes.size());
 		png = bytes;
 		emit grabbed(&png);
 	}
@@ -55,6 +56,21 @@ void AndroTouch::touch(QMouseEvent *evt)
 {
 	int x = evt->x() * 1080 / screen->width();
 	int y = evt->y() * 1920 / screen->height();
-	qDebug("touch: %d, %d", x, y);
-	QProcess::execute("adb", QStringList() << "shell" << "input" << "tap" << QString::number(x) << QString::number(y));
+	//qDebug("touch: %d, %d, %d", x, y, evt->type());
+
+	if(evt->type() == QEvent::MouseButtonPress) {
+		lastx = x;
+		lasty = y;
+		return;
+	}
+
+	QStringList args;
+	args  << "shell" << "input";
+
+	if(x == lastx && y == lasty)
+		args << "tap";
+	else
+		args << "swipe" << QString::number(lastx) << QString::number(lasty);
+
+	QProcess::execute("adb", args << QString::number(x) << QString::number(y));
 }
