@@ -5,5 +5,5 @@ RESOURCES += androtouch.qrc
 ANDROTOUCH = app
 CONFIG += release warn_on thread qt
 TARGET = androtouch
-QT += network
+QT += widgets network
 RC_FILE = androtouch.rc
