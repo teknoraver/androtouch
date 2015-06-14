@@ -49,6 +49,7 @@ private slots:
 private:
 	Grabber grabber;
 	int lastx, lasty;
+	int swidth, sheight;
 };
 
 #endif

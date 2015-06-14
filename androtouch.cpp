@@ -48,14 +48,16 @@ void AndroTouch::sshot(QByteArray *bytes)
 {
 	QPixmap png;
 	png.loadFromData(*bytes, "PNG");
+	swidth = png.width();
+	sheight = png.height();
 	png = png.scaledToHeight(screen->height(), Qt::SmoothTransformation);
 	screen->setPixmap(png);
 }
 
 void AndroTouch::touch(QMouseEvent *evt)
 {
-	int x = evt->x() * 1080 / screen->width();
-	int y = evt->y() * 1920 / screen->height();
+	int x = evt->x() * swidth / screen->width();
+	int y = evt->y() * sheight / screen->height();
 	//qDebug("touch: %d, %d, %d", x, y, evt->type());
 
 	if(evt->type() == QEvent::MouseButtonPress) {
