@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/">
-    <file>androtouch.png</file>
+    <file>imgs/androidtouch.png</file>
+    <file>imgs/exit.png</file>
   </qresource>
 </RCC>
