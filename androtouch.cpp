@@ -11,8 +11,8 @@ AndroTouch::AndroTouch() : QMainWindow(0)
 	connect(actionAbout, SIGNAL(triggered()), SLOT(about()));
 	connect(actionAbout_Qt, SIGNAL(triggered()), QCoreApplication::instance(), SLOT(aboutQt()));
 	connect(&grabber, SIGNAL(grabbed(QByteArray*)), SLOT(sshot(QByteArray*)));
-	connect(screen, SIGNAL(clicked(QMouseEvent*)), SLOT(touch(QMouseEvent*)));
-	connect(screen, SIGNAL(unclicked(QMouseEvent*)), SLOT(touch(QMouseEvent*)));
+	connect(phoneScreen, SIGNAL(clicked(QMouseEvent*)), SLOT(touch(QMouseEvent*)));
+	connect(phoneScreen, SIGNAL(unclicked(QMouseEvent*)), SLOT(touch(QMouseEvent*)));
 
 	grabber.start();
 }
@@ -50,14 +50,14 @@ void AndroTouch::sshot(QByteArray *bytes)
 	png.loadFromData(*bytes, "PNG");
 	swidth = png.width();
 	sheight = png.height();
-	png = png.scaledToHeight(screen->height(), Qt::SmoothTransformation);
-	screen->setPixmap(png);
+	png = png.scaledToHeight(phoneScreen->height(), Qt::SmoothTransformation);
+	phoneScreen->setPixmap(png);
 }
 
 void AndroTouch::touch(QMouseEvent *evt)
 {
-	int x = evt->x() * swidth / screen->width();
-	int y = evt->y() * sheight / screen->height();
+	int x = evt->x() * swidth / phoneScreen->width();
+	int y = evt->y() * sheight / phoneScreen->height();
 	//qDebug("touch: %d, %d, %d", x, y, evt->type());
 
 	if(evt->type() == QEvent::MouseButtonPress) {
