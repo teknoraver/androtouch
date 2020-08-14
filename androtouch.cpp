@@ -9,7 +9,7 @@
 
 #include "androtouch.h"
 
-AndroTouch::AndroTouch() : QMainWindow(0)
+AndroTouch::AndroTouch() : QMainWindow(0), grabber(this)
 {
 #ifdef QT_DEBUG
 	QLoggingCategory::defaultCategory()->setEnabled(QtDebugMsg, true);
@@ -37,7 +37,10 @@ void Grabber::run()
 		QProcess adb;
 		adb.start("adb", QStringList() << "shell" << "screencap" << "-p");
 		adb.waitForFinished(-1);
-		QByteArray bytes = adb.readAllStandardOutput().replace("\r\n", "\n");
+		QByteArray bytes = adb.readAllStandardOutput();
+
+		if (ui->actionCR->isChecked())
+			bytes = adb.readAllStandardOutput().replace("\r\n", "\n");
 
 		if(!bytes.startsWith("\x89PNG\r\n\x1a\n")) {
 			qDebug("invalid image, missing PNG");
@@ -75,8 +78,12 @@ void AndroTouch::touch(QMouseEvent *evt)
 		return;
 	}
 
-	QStringList args;
-	args  << "shell" << "input";
+	QStringList args("shell");
+
+	if (actionSU->isChecked())
+		args  << "su" << "-c";
+
+	args  << "input";
 
 	if(x == lastx && y == lasty)
 		args << "tap";

@@ -28,11 +28,18 @@ protected:
 
 #include "ui_androtouchwidget.h"
 
+class AndroTouch;
+
 class Grabber : public QThread
 {
 	Q_OBJECT
 	void run();
 	QByteArray png;
+	Ui::MainWindow *ui;
+public:
+	Grabber(Ui::MainWindow *u) {
+		ui = u;
+	}
 signals:
 	void grabbed(QByteArray*);
 };
