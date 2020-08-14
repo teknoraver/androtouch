@@ -43,14 +43,16 @@ void Grabber::run()
 			bytes = adb.readAllStandardOutput().replace("\r\n", "\n");
 
 		if(!bytes.startsWith("\x89PNG\r\n\x1a\n")) {
-			qDebug("invalid image, missing PNG");
+			ui->statusbar->showMessage("invalid image, missing PNG");
 			continue;
 		}
 		if(!bytes.endsWith("IEND\xae\x42\x60\x82")) {
-			qDebug("invalid image, missing IEND");
+			ui->statusbar->showMessage("invalid image, missing IEND");
 			continue;
 		}
-		qDebug("size: %d", bytes.size());
+#ifdef QT_DEBUG
+		qDebug() << "size" << bytes.size();
+#endif
 		png = bytes;
 		emit grabbed(&png);
 	}
@@ -70,7 +72,9 @@ void AndroTouch::touch(QMouseEvent *evt)
 {
 	int x = evt->x() * swidth / phoneScreen->width();
 	int y = evt->y() * sheight / phoneScreen->height();
-	qDebug("touch: %d, %d, %d", x, y, evt->type());
+#ifdef QT_DEBUG
+	qDebug() << "touch:" << x << y << evt->type();
+#endif
 
 	if(evt->type() == QEvent::MouseButtonPress) {
 		lastx = x;
@@ -89,6 +93,10 @@ void AndroTouch::touch(QMouseEvent *evt)
 		args << "tap";
 	else
 		args << "swipe" << QString::number(lastx) << QString::number(lasty);
+
+#ifdef QT_DEBUG
+	qDebug() << "input:" << args;
+#endif
 
 	QProcess::execute("adb", args << QString::number(x) << QString::number(y));
 }
