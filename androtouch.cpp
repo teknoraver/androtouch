@@ -3,10 +3,19 @@
 #include <QMouseEvent>
 #include <QProcess>
 
+#ifdef QT_DEBUG
+#include <QLoggingCategory>
+#endif
+
 #include "androtouch.h"
 
 AndroTouch::AndroTouch() : QMainWindow(0)
 {
+#ifdef QT_DEBUG
+	QLoggingCategory::defaultCategory()->setEnabled(QtDebugMsg, true);
+	qDebug("Init");
+#endif
+
 	setupUi(this);
 	connect(actionAbout, SIGNAL(triggered()), SLOT(about()));
 	connect(actionAbout_Qt, SIGNAL(triggered()), QCoreApplication::instance(), SLOT(aboutQt()));
@@ -38,7 +47,7 @@ void Grabber::run()
 			qDebug("invalid image, missing IEND");
 			continue;
 		}
-		//qDebug("size: %d", bytes.size());
+		qDebug("size: %d", bytes.size());
 		png = bytes;
 		emit grabbed(&png);
 	}
@@ -58,7 +67,7 @@ void AndroTouch::touch(QMouseEvent *evt)
 {
 	int x = evt->x() * swidth / phoneScreen->width();
 	int y = evt->y() * sheight / phoneScreen->height();
-	//qDebug("touch: %d, %d, %d", x, y, evt->type());
+	qDebug("touch: %d, %d, %d", x, y, evt->type());
 
 	if(evt->type() == QEvent::MouseButtonPress) {
 		lastx = x;
