@@ -70,8 +70,8 @@ void AndroTouch::sshot(QByteArray *bytes)
 
 void AndroTouch::touch(QMouseEvent *evt)
 {
-	int x = evt->x() * swidth / phoneScreen->width();
-	int y = evt->y() * sheight / phoneScreen->height();
+	int x = evt->x() * swidth / phoneScreen->pixmap()->width();
+	int y = evt->y() * sheight / phoneScreen->pixmap()->height();
 #ifdef QT_DEBUG
 	qDebug() << "touch:" << x << y << evt->type();
 #endif
