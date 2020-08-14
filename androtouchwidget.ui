@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="androtouch.qrc">
-    <normaloff>:/imgs/androidtouch.png</normaloff>:/imgs/androidtouch.png</iconset>
+    <normaloff>:/imgs/androtouch.png</normaloff>:/imgs/androtouch.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -79,6 +79,10 @@
    </property>
   </action>
   <action name="actionExit">
+   <property name="icon">
+    <iconset resource="androtouch.qrc">
+     <normaloff>:/imgs/exit.png</normaloff>:/imgs/exit.png</iconset>
+   </property>
    <property name="text">
     <string>E&amp;xit</string>
    </property>

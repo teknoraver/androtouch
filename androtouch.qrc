@@ -1,5 +1,5 @@
 <RCC>
   <qresource prefix="/">
-    <file>imgs/androidtouch.png</file>
+    <file>imgs/androtouch.png</file>
   </qresource>
 </RCC>
