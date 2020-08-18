@@ -49,6 +49,8 @@ class AndroTouch: public QMainWindow, private Ui::MainWindow
 	Q_OBJECT
 public:
 	AndroTouch();
+protected:
+	void keyPressEvent(QKeyEvent *event);
 private slots:
 	void about();
 	void sshot(QByteArray*);

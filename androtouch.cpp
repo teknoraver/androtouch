@@ -115,3 +115,23 @@ void AndroTouch::touch(QMouseEvent *evt)
 
 	QProcess::execute("adb", args);
 }
+
+void AndroTouch::keyPressEvent(QKeyEvent *event)
+{
+#ifdef QT_DEBUG
+	qDebug() << "key:" << event;
+#endif
+
+	QStringList args("shell");
+
+	if (actionSU->isChecked())
+		args  << "su" << "-c";
+
+	args << "input" << "text" << event->text();
+
+#ifdef QT_DEBUG
+	qDebug() << "key:" << args;
+#endif
+
+	QProcess::execute("adb", args);
+}
