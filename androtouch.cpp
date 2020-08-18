@@ -73,7 +73,7 @@ void AndroTouch::touch(QMouseEvent *evt)
 	int x = evt->x() * swidth / phoneScreen->pixmap()->width();
 	int y = evt->y() * sheight / phoneScreen->pixmap()->height();
 #ifdef QT_DEBUG
-	qDebug() << "touch:" << x << y << evt->type();
+	qDebug() << "touch:" << x << y << evt->type() << evt->button();
 #endif
 
 	if(evt->type() == QEvent::MouseButtonPress) {
@@ -89,14 +89,29 @@ void AndroTouch::touch(QMouseEvent *evt)
 
 	args  << "input";
 
-	if(x == lastx && y == lasty)
-		args << "tap";
-	else
-		args << "swipe" << QString::number(lastx) << QString::number(lasty);
+	if(x == lastx && y == lasty) {
+		switch (evt->button()) {
+		case Qt::LeftButton:
+			args << "tap" << QString::number(lastx) << QString::number(lasty);
+			break;
+		case Qt::RightButton:
+			args << "draganddrop" <<
+				QString::number(lastx) << QString::number(lasty) <<
+				QString::number(lastx) << QString::number(lasty) <<
+				"1050";
+			break;
+		default:
+			return;
+		}
+	} else {
+		args << "swipe" <<
+			QString::number(lastx) << QString::number(lasty) <<
+			QString::number(lastx) << QString::number(lasty);
+	}
 
 #ifdef QT_DEBUG
 	qDebug() << "input:" << args;
 #endif
 
-	QProcess::execute("adb", args << QString::number(x) << QString::number(y));
+	QProcess::execute("adb", args);
 }
