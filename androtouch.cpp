@@ -127,7 +127,67 @@ void AndroTouch::keyPressEvent(QKeyEvent *event)
 	if (actionSU->isChecked())
 		args  << "su" << "-c";
 
-	args << "input" << "text" << event->text();
+	int oldlen = args.count();
+
+	switch (event->key()) {
+	case Qt::Key_Left:
+		args << "input" << "keyevent" << "KEYCODE_DPAD_LEFT";
+		break;
+	case Qt::Key_Up:
+		args << "input" << "keyevent" << "KEYCODE_DPAD_UP";
+		break;
+	case Qt::Key_Right:
+		args << "input" << "keyevent" << "KEYCODE_DPAD_RIGHT";
+		break;
+	case Qt::Key_Down:
+		args << "input" << "keyevent" << "KEYCODE_DPAD_DOWN";
+		break;
+	case Qt::Key_Return:
+		args << "input" << "keyevent" << "KEYCODE_ENTER";
+		break;
+	case Qt::Key_Backspace:
+		args << "input" << "keyevent" << "KEYCODE_DEL";
+		break;
+	case Qt::Key_Escape:
+		args << "input" << "keyevent" << "KEYCODE_BACK";
+		break;
+	case Qt::Key_Space:
+		args << "input" << "keyevent" << "KEYCODE_SPACE";
+		break;
+	case Qt::Key_Semicolon:
+		args << "input" << "keyevent" << "KEYCODE_SEMICOLON";
+		break;
+	case Qt::Key_ParenLeft:
+		args << "input" << "keyevent" << "KEYCODE_NUMPAD_LEFT_PAREN";
+		break;
+	case Qt::Key_ParenRight:
+		args << "input" << "keyevent" << "KEYCODE_NUMPAD_RIGHT_PAREN";
+		break;
+	case Qt::Key_Asterisk:
+		args << "input" << "keyevent" << "KEYCODE_STAR";
+		break;
+	case Qt::Key_QuoteLeft:
+		args << "input" << "keyevent" << "KEYCODE_GRAVE";
+		break;
+	case Qt::Key_NumberSign:
+		args << "input" << "keyevent" << "KEYCODE_POUND";
+		break;
+	case Qt::Key_CapsLock:
+		args << "input" << "keyevent" << "KEYCODE_CAPS_LOCK";
+		break;
+	case Qt::Key_Home:
+		args << "input" << "keyevent" << "KEYCODE_MOVE_HOME";
+		break;
+	case Qt::Key_End:
+		args << "input" << "keyevent" << "KEYCODE_MOVE_END";
+		break;
+	}
+
+	if (args.count() == oldlen) {
+		if (!event->text().size())
+			return;
+		args << "input" << "text" << ('\'' + event->text() + '\'');
+	}
 
 #ifdef QT_DEBUG
 	qDebug() << "key:" << args;
