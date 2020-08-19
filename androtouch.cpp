@@ -106,7 +106,7 @@ void AndroTouch::touch(QMouseEvent *evt)
 	} else {
 		args << "swipe" <<
 			QString::number(lastx) << QString::number(lasty) <<
-			QString::number(lastx) << QString::number(lasty);
+			QString::number(x) << QString::number(y);
 	}
 
 #ifdef QT_DEBUG
