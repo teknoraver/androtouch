@@ -1,8 +1,2 @@
-/Makefile
-/*.o
-/moc_*
-/qrc_*
-/template
-/ui_*.h
-/androtouch
-/.qmake.stash
+/build*/
+/CMakeLists.txt.user*
