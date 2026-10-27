@@ -1,5 +1,10 @@
 # AndroTouch
 AndroTouch is a tool to replicate the screen of an Android device on your PC. AndroTouch tries also to forward clicks from the PC to the Device.
+
+Its most useful use case is recovering data from a phone with a broken screen or touchscreen:
+the phone can be operated from the PC with the mouse and the keyboard.
+This only works if USB debugging was enabled on the phone before it broke.
+
 ## How it works
 AndroTouch uses [USB debug](https://developer.android.com/studio/debug/dev-options) to execute some commands on the device, so it must be enabled first.  
 [ADB shell](https://developer.android.com/studio/command-line/adb) is used to run `screencap` to capture the screen and `input` to forward clicks and keypresses.
