@@ -40,7 +40,7 @@ void Grabber::run()
 		QByteArray bytes = adb.readAllStandardOutput();
 
 		if (ui->actionCR->isChecked())
-			bytes = adb.readAllStandardOutput().replace("\r\n", "\n");
+			bytes.replace("\r\n", "\n");
 
 		if(!bytes.startsWith("\x89PNG\r\n\x1a\n")) {
 			ui->statusbar->showMessage("invalid image, missing PNG");
