@@ -18,4 +18,4 @@ cmake --build build
 
 Copyright (C) 2015 Matteo Croce
 
-AndroTouch is released under the GNU General Public License version 3 or later, see [LICENSE](LICENSE).
+AndroTouch is released under the GNU General Public License version 3 or later, see [COPYING](COPYING).
