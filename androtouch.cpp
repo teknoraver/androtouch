@@ -30,7 +30,7 @@ AndroTouch::AndroTouch() : QMainWindow(nullptr)
 
 void AndroTouch::about()
 {
-	QMessageBox::about(this, "About AndroTouch", "AndroTouch - a Qt AndroTouch application<br>by Matteo Croce <a href=\"http://teknoraver.net/\">http://teknoraver.net/</a>");
+	QMessageBox::about(this, "About AndroTouch", "AndroTouch - a Qt AndroTouch application<br>by Matteo Croce <a href=\"https://matteocroce.it/\">https://matteocroce.it/</a>");
 }
 
 Grabber::~Grabber()
