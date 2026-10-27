@@ -5,6 +5,8 @@
 #include <QThread>
 #include <QLabel>
 
+#include <atomic>
+
 class ClickableLabel : public QLabel
 {
 Q_OBJECT
@@ -28,20 +30,17 @@ protected:
 
 #include "ui_androtouchwidget.h"
 
-class AndroTouch;
-
 class Grabber : public QThread
 {
 	Q_OBJECT
 	void run() override;
-	QByteArray png;
-	Ui::MainWindow *ui;
+	void fail(const QString &msg);
 public:
-	Grabber(Ui::MainWindow *u) {
-		ui = u;
-	}
+	~Grabber() override;
+	std::atomic<bool> crlf = false;
 signals:
-	void grabbed(QByteArray*);
+	void grabbed(const QByteArray&);
+	void error(const QString&);
 };
 
 class AndroTouch: public QMainWindow, private Ui::MainWindow
@@ -53,7 +52,7 @@ protected:
 	void keyPressEvent(QKeyEvent *event) override;
 private slots:
 	void about();
-	void sshot(QByteArray*);
+	void sshot(const QByteArray&);
 	void touch(QMouseEvent *evt);
 private:
 	Grabber grabber;

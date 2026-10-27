@@ -9,7 +9,7 @@
 
 #include "androtouch.h"
 
-AndroTouch::AndroTouch() : QMainWindow(nullptr), grabber(this)
+AndroTouch::AndroTouch() : QMainWindow(nullptr)
 {
 #ifdef QT_DEBUG
 	QLoggingCategory::defaultCategory()->setEnabled(QtDebugMsg, true);
@@ -20,6 +20,8 @@ AndroTouch::AndroTouch() : QMainWindow(nullptr), grabber(this)
 	connect(actionAbout, &QAction::triggered, this, &AndroTouch::about);
 	connect(actionAbout_Qt, &QAction::triggered, qApp, &QApplication::aboutQt);
 	connect(&grabber, &Grabber::grabbed, this, &AndroTouch::sshot);
+	connect(&grabber, &Grabber::error, statusbar, [this](const QString &msg) { statusbar->showMessage(msg); });
+	connect(actionCR, &QAction::toggled, this, [this](bool checked) { grabber.crlf = checked; });
 	connect(phoneScreen, &ClickableLabel::clicked, this, &AndroTouch::touch);
 	connect(phoneScreen, &ClickableLabel::unclicked, this, &AndroTouch::touch);
 
@@ -31,37 +33,59 @@ void AndroTouch::about()
 	QMessageBox::about(this, "About AndroTouch", "AndroTouch - a Qt AndroTouch application<br>by Matteo Croce <a href=\"http://teknoraver.net/\">http://teknoraver.net/</a>");
 }
 
+Grabber::~Grabber()
+{
+	requestInterruption();
+	wait();
+}
+
+/* runs in the grabber thread: never touch the GUI from here, use signals */
+void Grabber::fail(const QString &msg)
+{
+	emit error(msg);
+	/* don't spin when adb or the device are not available */
+	msleep(1000);
+}
+
 void Grabber::run()
 {
-	while(1) {
+	while(!isInterruptionRequested()) {
 		QProcess adb;
 		adb.start("adb", {"shell", "screencap", "-p"});
-		adb.waitForFinished(-1);
+		if(!adb.waitForStarted()) {
+			fail("can't run adb: " + adb.errorString());
+			continue;
+		}
+		while(!adb.waitForFinished(100))
+			if(isInterruptionRequested()) {
+				adb.kill();
+				adb.waitForFinished();
+				return;
+			}
 		QByteArray bytes = adb.readAllStandardOutput();
 
-		if (ui->actionCR->isChecked())
+		if (crlf)
 			bytes.replace("\r\n", "\n");
 
 		if(!bytes.startsWith("\x89PNG\r\n\x1a\n")) {
-			ui->statusbar->showMessage("invalid image, missing PNG");
+			fail("invalid image, missing PNG");
 			continue;
 		}
 		if(!bytes.endsWith("IEND\xae\x42\x60\x82")) {
-			ui->statusbar->showMessage("invalid image, missing IEND");
+			fail("invalid image, missing IEND");
 			continue;
 		}
 #ifdef QT_DEBUG
 		qDebug() << "size" << bytes.size();
 #endif
-		png = bytes;
-		emit grabbed(&png);
+		emit grabbed(bytes);
 	}
 }
 
-void AndroTouch::sshot(QByteArray *bytes)
+void AndroTouch::sshot(const QByteArray &bytes)
 {
 	QPixmap png;
-	png.loadFromData(*bytes, "PNG");
+	png.loadFromData(bytes, "PNG");
 	swidth = png.width();
 	sheight = png.height();
 	png = png.scaledToHeight(phoneScreen->height(), Qt::SmoothTransformation);
