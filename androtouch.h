@@ -6,21 +6,21 @@
 #include <QLabel>
 
 class ClickableLabel : public QLabel
-{ 
+{
 Q_OBJECT
 public:
-	explicit ClickableLabel(QWidget *) {};
+	explicit ClickableLabel(QWidget *parent) : QLabel(parent) {}
 
 signals:
 	void clicked(QMouseEvent*);
 	void unclicked(QMouseEvent*);
 
 protected:
-	void mousePressEvent(QMouseEvent *event)
+	void mousePressEvent(QMouseEvent *event) override
 	{
 		emit clicked(event);
 	}
-	void mouseReleaseEvent(QMouseEvent *event)
+	void mouseReleaseEvent(QMouseEvent *event) override
 	{
 		emit unclicked(event);
 	}
@@ -33,7 +33,7 @@ class AndroTouch;
 class Grabber : public QThread
 {
 	Q_OBJECT
-	void run();
+	void run() override;
 	QByteArray png;
 	Ui::MainWindow *ui;
 public:
@@ -50,7 +50,7 @@ class AndroTouch: public QMainWindow, private Ui::MainWindow
 public:
 	AndroTouch();
 protected:
-	void keyPressEvent(QKeyEvent *event);
+	void keyPressEvent(QKeyEvent *event) override;
 private slots:
 	void about();
 	void sshot(QByteArray*);

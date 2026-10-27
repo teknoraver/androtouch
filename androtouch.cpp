@@ -9,7 +9,7 @@
 
 #include "androtouch.h"
 
-AndroTouch::AndroTouch() : QMainWindow(0), grabber(this)
+AndroTouch::AndroTouch() : QMainWindow(nullptr), grabber(this)
 {
 #ifdef QT_DEBUG
 	QLoggingCategory::defaultCategory()->setEnabled(QtDebugMsg, true);
@@ -17,25 +17,25 @@ AndroTouch::AndroTouch() : QMainWindow(0), grabber(this)
 #endif
 
 	setupUi(this);
-	connect(actionAbout, SIGNAL(triggered()), SLOT(about()));
-	connect(actionAbout_Qt, SIGNAL(triggered()), QCoreApplication::instance(), SLOT(aboutQt()));
-	connect(&grabber, SIGNAL(grabbed(QByteArray*)), SLOT(sshot(QByteArray*)));
-	connect(phoneScreen, SIGNAL(clicked(QMouseEvent*)), SLOT(touch(QMouseEvent*)));
-	connect(phoneScreen, SIGNAL(unclicked(QMouseEvent*)), SLOT(touch(QMouseEvent*)));
+	connect(actionAbout, &QAction::triggered, this, &AndroTouch::about);
+	connect(actionAbout_Qt, &QAction::triggered, qApp, &QApplication::aboutQt);
+	connect(&grabber, &Grabber::grabbed, this, &AndroTouch::sshot);
+	connect(phoneScreen, &ClickableLabel::clicked, this, &AndroTouch::touch);
+	connect(phoneScreen, &ClickableLabel::unclicked, this, &AndroTouch::touch);
 
 	grabber.start();
 }
 
 void AndroTouch::about()
 {
-        QMessageBox::about(this, "About AndroTouch", "AndroTouch - a Qt AndroTouch application<br>by Matteo Croce <a href=\"http://teknoraver.net/\">http://teknoraver.net/</a>");
+	QMessageBox::about(this, "About AndroTouch", "AndroTouch - a Qt AndroTouch application<br>by Matteo Croce <a href=\"http://teknoraver.net/\">http://teknoraver.net/</a>");
 }
 
 void Grabber::run()
 {
 	while(1) {
 		QProcess adb;
-		adb.start("adb", QStringList() << "shell" << "screencap" << "-p");
+		adb.start("adb", {"shell", "screencap", "-p"});
 		adb.waitForFinished(-1);
 		QByteArray bytes = adb.readAllStandardOutput();
 
@@ -70,8 +70,9 @@ void AndroTouch::sshot(QByteArray *bytes)
 
 void AndroTouch::touch(QMouseEvent *evt)
 {
-	int x = evt->x() * swidth / phoneScreen->pixmap()->width();
-	int y = evt->y() * sheight / phoneScreen->pixmap()->height();
+	QPoint pos = evt->position().toPoint();
+	int x = pos.x() * swidth / phoneScreen->pixmap().width();
+	int y = pos.y() * sheight / phoneScreen->pixmap().height();
 #ifdef QT_DEBUG
 	qDebug() << "touch:" << x << y << evt->type() << evt->button();
 #endif
