@@ -5,6 +5,7 @@
 #include <QPixmap>
 #include <QMouseEvent>
 #include <QProcess>
+#include <QWheelEvent>
 
 #ifdef QT_DEBUG
 #include <QLoggingCategory>
@@ -27,6 +28,12 @@ AndroTouch::AndroTouch() : QMainWindow(nullptr)
 	connect(actionCR, &QAction::toggled, this, [this](bool checked) { grabber.crlf = checked; });
 	connect(phoneScreen, &ClickableLabel::clicked, this, &AndroTouch::touch);
 	connect(phoneScreen, &ClickableLabel::unclicked, this, &AndroTouch::touch);
+	connect(phoneScreen, &ClickableLabel::wheeled, this, &AndroTouch::wheel);
+
+	// a wheel turn generates many events, send them as a single swipe
+	scrollTimer.setSingleShot(true);
+	scrollTimer.setInterval(100);
+	connect(&scrollTimer, &QTimer::timeout, this, &AndroTouch::scroll);
 
 	grabber.start();
 }
@@ -146,6 +153,63 @@ void AndroTouch::touch(QMouseEvent *evt)
 #endif
 
 	QProcess::execute("adb", args);
+}
+
+void AndroTouch::wheel(QWheelEvent *evt)
+{
+	if(phoneScreen->pixmap().isNull())
+		return;
+
+	QPoint pos = evt->position().toPoint();
+	scrollPos.setX(pos.x() * swidth / phoneScreen->pixmap().width());
+	scrollPos.setY(pos.y() * sheight / phoneScreen->pixmap().height());
+	scrollDelta += evt->angleDelta();
+	scrollTimer.start();
+}
+
+// move the swipe so that it fits in the screen
+static void fit(int &from, int &to, int size)
+{
+	if(to < 0) {
+		from -= to;
+		to = 0;
+	} else if(to >= size) {
+		from -= to - size + 1;
+		to = size - 1;
+	}
+}
+
+void AndroTouch::scroll()
+{
+	// a wheel step (120) scrolls by a tenth of the screen, at most by half of it
+	int dx = qBound(-swidth / 2, scrollDelta.x() * swidth / 1200, swidth / 2);
+	int dy = qBound(-sheight / 2, scrollDelta.y() * sheight / 1200, sheight / 2);
+	scrollDelta = QPoint();
+	if(!dx && !dy)
+		return;
+
+	// the content follows the finger: wheel up drags it down
+	int x1 = scrollPos.x(), x2 = x1 + dx;
+	int y1 = scrollPos.y(), y2 = y1 + dy;
+	fit(x1, x2, swidth);
+	fit(y1, y2, sheight);
+
+	QStringList args("shell");
+
+	if (actionSU->isChecked())
+		args  << "su" << "-c";
+
+	// a slow swipe, so that it doesn't fling
+	args << "input" << "swipe" <<
+		QString::number(x1) << QString::number(y1) <<
+		QString::number(x2) << QString::number(y2) <<
+		"300";
+
+#ifdef QT_DEBUG
+	qDebug() << "scroll:" << args;
+#endif
+
+	QProcess::startDetached("adb", args);
 }
 
 void AndroTouch::keyPressEvent(QKeyEvent *event)

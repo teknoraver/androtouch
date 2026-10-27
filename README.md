@@ -13,7 +13,8 @@ This only works if USB debugging was enabled on the phone before it broke.
 
 ## How it works
 AndroTouch uses [USB debug](https://developer.android.com/studio/debug/dev-options) to execute some commands on the device, so it must be enabled first.  
-[ADB shell](https://developer.android.com/studio/command-line/adb) is used to run `screencap` to capture the screen and `input` to forward clicks and keypresses.
+[ADB shell](https://developer.android.com/studio/command-line/adb) is used to run `screencap` to capture the screen and `input` to forward clicks and keypresses,
+and the mouse wheel as a swipe.
 On some device `input` must be run as root, so the phone must be rooted.
 
 ## Build

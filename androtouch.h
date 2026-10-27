@@ -7,6 +7,7 @@
 #include <QMainWindow>
 #include <QThread>
 #include <QLabel>
+#include <QTimer>
 
 #include <atomic>
 
@@ -19,6 +20,7 @@ public:
 signals:
 	void clicked(QMouseEvent*);
 	void unclicked(QMouseEvent*);
+	void wheeled(QWheelEvent*);
 
 protected:
 	void mousePressEvent(QMouseEvent *event) override
@@ -28,6 +30,10 @@ protected:
 	void mouseReleaseEvent(QMouseEvent *event) override
 	{
 		emit unclicked(event);
+	}
+	void wheelEvent(QWheelEvent *event) override
+	{
+		emit wheeled(event);
 	}
 };
 
@@ -57,10 +63,14 @@ private slots:
 	void about();
 	void sshot(const QByteArray&);
 	void touch(QMouseEvent *evt);
+	void wheel(QWheelEvent *evt);
+	void scroll();
 private:
 	Grabber grabber;
 	int lastx, lasty;
 	int swidth, sheight;
+	QTimer scrollTimer;
+	QPoint scrollPos, scrollDelta;
 };
 
 #endif
