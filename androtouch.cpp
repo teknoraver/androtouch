@@ -94,6 +94,10 @@ void AndroTouch::sshot(const QByteArray &bytes)
 
 void AndroTouch::touch(QMouseEvent *evt)
 {
+	/* no screenshot yet, the coordinates can't be scaled */
+	if(phoneScreen->pixmap().isNull())
+		return;
+
 	QPoint pos = evt->position().toPoint();
 	int x = pos.x() * swidth / phoneScreen->pixmap().width();
 	int y = pos.y() * sheight / phoneScreen->pixmap().height();
